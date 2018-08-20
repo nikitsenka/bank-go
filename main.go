@@ -12,20 +12,29 @@ import (
 // our main function
 func main() {
 	router := mux.NewRouter()
-	router.HandleFunc("/client/{deposit}", ClientHandler).Methods("POST")
-	router.HandleFunc("/client/{id}/balance", ClientHandler).Methods("GET")
+	router.HandleFunc("/", HomeHandler)
+	router.HandleFunc("/client/new/{deposit}", NewClientHandler).Methods("POST")
+	router.HandleFunc("/client/{id}/balance", BalanceHandler).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
-func ClientHandler(writer http.ResponseWriter, request *http.Request) {
+func HomeHandler(writer http.ResponseWriter, request *http.Request) {
+	writer.Write([]byte(`{"status":"Ok"}`))
+}
+
+func NewClientHandler(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+	s := params["deposit"]
+	i, _ := strconv.Atoi(s)
+	client := bank.NewClient(i)
+	json.NewEncoder(writer).Encode(client)
+}
+
+func BalanceHandler(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	s := params["id"]
 	i, _ := strconv.Atoi(s)
 	balance := bank.CheckBalance(i)
-	response := BalanceJson{balance}
+	response := bank.Balance{balance}
 	json.NewEncoder(writer).Encode(response)
-}
-
-type BalanceJson struct {
-	Balance int `json:"balance"`
 }

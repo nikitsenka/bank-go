@@ -28,14 +28,14 @@ func TestBank(t *testing.T) {
 		t.Errorf("TestNewClient() = %v, want %v", client2, expectedCleint2)
 	}
 
-	NewTransaction(client1.id, client2.id, 1000)
+	NewTransaction(client1.Id, client2.Id, 1000)
 
-	balance1 := CheckBalance(client1.id)
+	balance1 := CheckBalance(client1.Id)
 	if balance1 != 0{
 		t.Errorf("Incorrect balance = %v, want %v", balance1, 0)
 	}
 
-	balance2 := CheckBalance(client2.id)
+	balance2 := CheckBalance(client2.Id)
 	if balance2 != 3000{
 		t.Errorf("Incorrect balance = %v, want %v", balance2, 3000)
 	}
@@ -56,7 +56,7 @@ func TestUpdateClient(t *testing.T) {
 
 	client := Client{0, "name1", "email1", "phone1"}
 	client = SaveClient(client)
-	client.name = "name2"
+	client.Name = "name2"
 	actual := SaveClient(client)
 	if !reflect.DeepEqual(actual, client) {
 		t.Errorf("TestUpdateClient() = %v, want %v", actual, client)

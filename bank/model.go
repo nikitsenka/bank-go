@@ -1,10 +1,10 @@
 package bank
 
 type Client struct {
-	id    int
-	name  string
-	email string
-	phone string
+	Id    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
 }
 
 type Transaction struct {
@@ -14,3 +14,6 @@ type Transaction struct {
 	amount         int
 }
 
+type Balance struct {
+	Balance int `json:"balance"`
+}

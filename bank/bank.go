@@ -9,7 +9,7 @@ _	"github.com/gorilla/mux"
 func NewClient(balance int) (Client){
 	client := Client{0, "", "", ""}
 	client = SaveClient(client)
-	transaction := Transaction{0, 0, client.id, balance}
+	transaction := Transaction{0, 0, client.Id, balance}
 	CreateTransaction(transaction)
 	return client
 }
