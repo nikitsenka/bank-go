@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"encoding/json"
 	"strconv"
-	"home-work-1/bank"
+	"bank-go/bank"
 )
 
 // our main function
