@@ -8,10 +8,10 @@ type Client struct {
 }
 
 type Transaction struct {
-	id             int
-	from_client_id int
-	to_client_id   int
-	amount         int
+	Id             int `json:"id"`
+	From_client_id int `json:"from_client_id"`
+	To_client_id   int `json:"to_client_id"`
+	Amount         int `json:"amount"`
 }
 
 type Balance struct {

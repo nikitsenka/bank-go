@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/nikitsenka/bank-go/bank/utils"
+	"time"
 )
 
 var DB_HOST     = utils.GetEnv("POSTGRES_HOST", "localhost")
@@ -41,6 +42,7 @@ func SaveClient(client Client) (Client) {
 		fmt.Println("Updated client with id", id)
 	}
 	checkErr(err)
+	db.Close()
 	client.Id = id
 	return client
 }
@@ -49,14 +51,15 @@ func CreateTransaction(trans Transaction) (Transaction) {
 	db, err := newDb()
 	checkErr(err)
 	var id int;
-	if (trans.id == 0) {
+	if (trans.Id == 0) {
 		err = db.QueryRow(
 			"INSERT INTO transaction(from_client_id, to_client_id, amount) VALUES ($1, $2, $3) RETURNING id",
-			trans.from_client_id, trans.to_client_id, trans.amount).Scan(&id)
+			trans.From_client_id, trans.To_client_id, trans.Amount).Scan(&id)
 		fmt.Println("Created transaction with id", id)
 	}
 	checkErr(err)
-	trans.id = id
+	db.Close()
+	trans.Id = id
 	return trans
 }
 
@@ -80,6 +83,7 @@ func GetBalance(client_id int) int {
 		`, client_id).Scan(&balance)
 	}
 	checkErr(err)
+	db.Close()
 	fmt.Println("Calculated balance with client id", client_id)
 	return balance;
 }
@@ -88,6 +92,9 @@ func newDb() (*sql.DB, error) {
 	dbinfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
 		DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
 	db, err := sql.Open("postgres", dbinfo)
+	db.SetMaxOpenConns(20) // Sane default
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Nanosecond)
 	return db, err
 }
 
