@@ -5,15 +5,18 @@ services:
   db:
     image: postgres
     restart: always
-    environment:
-      POSTGRES_PASSWORD: test1234
     ports:
       - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: test1234
 
   bank-go:
     image: bank-go
     restart: always
-    links:
-      - db
     ports:
       - 8000:8000
+    links:
+      - db
+    environment:
+      POSTGRES_HOST: db
+
