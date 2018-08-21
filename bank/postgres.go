@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/nikitsenka/bank-go/bank/utils"
 )
 
-const (
-	DB_USER     = "postgres"
-	DB_PASSWORD = "test1234"
-	DB_NAME     = "postgres"
-)
+var DB_HOST     = utils.GetEnv("POSTGRES_HOST", "localhost")
+var DB_USER     = utils.GetEnv("POSTGRES_USER", "postgres")
+var DB_PASSWORD = utils.GetEnv("POSTGRES_PASSWORD", "test1234")
+var DB_NAME     = utils.GetEnv("POSTGRES_NAME", "postgres")
 
 func Init() {
 	db, _ := newDb()
@@ -85,8 +85,8 @@ func GetBalance(client_id int) int {
 }
 
 func newDb() (*sql.DB, error) {
-	dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable",
-		DB_USER, DB_PASSWORD, DB_NAME)
+	dbinfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
+		DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
 	db, err := sql.Open("postgres", dbinfo)
 	return db, err
 }
@@ -97,3 +97,5 @@ func checkErr(err error) {
 		panic(err)
 	}
 }
+
+
