@@ -44,12 +44,10 @@ func CreateTransaction(trans Transaction) (Transaction) {
 	db, err := newDb()
 	checkErr(err)
 	var id int;
-	if (trans.Id == 0) {
-		err = db.QueryRow(
-			"INSERT INTO transaction(from_client_id, to_client_id, amount) VALUES ($1, $2, $3) RETURNING id",
-			trans.From_client_id, trans.To_client_id, trans.Amount).Scan(&id)
-		fmt.Println("Created transaction with id", id)
-	}
+	err = db.QueryRow(
+		"INSERT INTO transaction(from_client_id, to_client_id, amount) VALUES ($1, $2, $3) RETURNING id",
+		trans.From_client_id, trans.To_client_id, trans.Amount).Scan(&id)
+	fmt.Println("Created transaction with id", id)
 	checkErr(err)
 	db.Close()
 	trans.Id = id
@@ -59,8 +57,7 @@ func CreateTransaction(trans Transaction) (Transaction) {
 func GetBalance(client_id int) int {
 	db, err := newDb()
 	var balance int
-	if (client_id != 0) {
-		err = db.QueryRow(`
+	err = db.QueryRow(`
 				SELECT debit - credit
 				FROM
 				  (
@@ -74,7 +71,6 @@ func GetBalance(client_id int) int {
 					WHERE from_client_id = $1
 				  ) b;
 		`, client_id).Scan(&balance)
-	}
 	checkErr(err)
 	db.Close()
 	fmt.Println("Calculated balance with client id", client_id)
