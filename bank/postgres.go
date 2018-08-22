@@ -26,21 +26,14 @@ func Init() {
 	db.Close()
 }
 
-func SaveClient(client Client) (Client) {
+func CreateClient(client Client) (Client) {
 	db, err := newDb()
 	checkErr(err)
 	var id int;
-	if (client.Id == 0) {
-		err = db.QueryRow(
-			"INSERT INTO client(name, email, phone) VALUES ($1, $2, $3) RETURNING id",
-			client.Name, client.Email, client.Phone).Scan(&id)
-		fmt.Println("Created client with id", id)
-	} else {
-		err = db.QueryRow(
-			"UPDATE client SET name = $2, email = $3, phone = $4 WHERE id = $1 RETURNING id",
-			client.Id, client.Name, client.Email, client.Phone).Scan(&id)
-		fmt.Println("Updated client with id", id)
-	}
+	err = db.QueryRow(
+		"INSERT INTO client(name, email, phone) VALUES ($1, $2, $3) RETURNING id",
+		client.Name, client.Email, client.Phone).Scan(&id)
+	fmt.Println("Created client with id", id)
 	checkErr(err)
 	db.Close()
 	client.Id = id

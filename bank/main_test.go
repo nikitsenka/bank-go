@@ -45,21 +45,10 @@ func TestBank(t *testing.T) {
 
 func TestSaveClient(t *testing.T) {
 	client := Client{0, "name1", "email1", "phone1"}
-	actual := SaveClient(client)
+	actual := CreateClient(client)
 	expected := Client{3, "name1", "email1", "phone1"}
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("TestSaveClient() = %v, want %v", actual, expected)
-	}
-}
-
-func TestUpdateClient(t *testing.T) {
-
-	client := Client{0, "name1", "email1", "phone1"}
-	client = SaveClient(client)
-	client.Name = "name2"
-	actual := SaveClient(client)
-	if !reflect.DeepEqual(actual, client) {
-		t.Errorf("TestUpdateClient() = %v, want %v", actual, client)
 	}
 }
 
