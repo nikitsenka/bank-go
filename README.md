@@ -13,7 +13,7 @@ Build docker image
 Run app in Docker
 with external postgres
 ```
-  docker run --name bank-go -p 8000:8000 -e POSTGRES_HOST=${host} -d bank-javadocker build -t bank-go .
+  docker run --name bank-go -p 8000:8000 -e POSTGRES_HOST=${host} -d bank-go
 ```
   or create both postgres and bank-go containers and run 
 ```
