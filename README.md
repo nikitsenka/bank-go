@@ -15,7 +15,7 @@ with external postgres
 ```
   docker run --name bank-go -p 8080:8080 -e POSTGRES_HOST=${host} -d bank-javadocker build -t bank-go .
 ```
-  or create postgres 
+  or create both postgres and bank-go containers and run 
 ```
   docker-compose up -d --force-recreate
 ```
