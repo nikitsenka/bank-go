@@ -7,13 +7,13 @@ Run tests locally
 ```
 Build docker image
 ```
-  docker build -t bank-java .
+  docker build --no-cache -t bank-go .
   
 ```
 Run app in Docker
 with external postgres
 ```
-  docker run --name bank-java -p 8080:8080 -e POSTGRES_HOST=${host} -d bank-javadocker build -t bank-java .
+  docker run --name bank-go -p 8080:8080 -e POSTGRES_HOST=${host} -d bank-javadocker build -t bank-go .
 ```
   or create postgres 
 ```
