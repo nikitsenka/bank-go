@@ -1,26 +1,27 @@
 package bank
 
 import (
-_	"log"
-_	"net/http"
-_	"github.com/gorilla/mux"
+	"database/sql"
+	_ "log"
+	_ "net/http"
+
+	_ "github.com/gorilla/mux"
 )
 
-func NewClient(balance int) (Client){
+func NewClient(p *sql.DB, balance int) Client {
 	client := Client{0, "", "", ""}
-	client = CreateClient(client)
+	client = CreateClient(p, client)
 	transaction := Transaction{0, 0, client.Id, balance}
-	CreateTransaction(transaction)
+	CreateTransaction(p, transaction)
 	return client
 }
 
-func NewTransaction(from_client_id int, to_client_id int, amount int) (Transaction){
+func NewTransaction(p *sql.DB, from_client_id int, to_client_id int, amount int) Transaction {
 	transaction := Transaction{0, from_client_id, to_client_id, amount}
-	transaction = CreateTransaction(transaction)
+	transaction = CreateTransaction(p, transaction)
 	return transaction
 }
 
-func CheckBalance(client_id int) (int){
-	return GetBalance(client_id)
+func CheckBalance(p *sql.DB, client_id int) int {
+	return GetBalance(p, client_id)
 }
-
