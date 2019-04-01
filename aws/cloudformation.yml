@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+    BankEC2Instance:
+        Description: Ec2 instance with running latest bank-go app.
+        Type: AWS::EC2::Instance
+        Properties:
+            InstanceType: 't2.micro'
+            SecurityGroups: [!Ref 'InstanceSecurityGroup']
+            KeyName: 'temp'
+            ImageId: 'ami-090f10efc254eaf55'
+            UserData:
+                Fn::Base64: !Sub |
+                    #!/bin/bash -xe
+                    sudo apt-get -y update
+                    sudo apt-get install -y git
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+                    sudo apt-get -y update
+                    sudo apt-get install -y docker-ce
+                    sudo service docker start
+                    sudo git clone https://github.com/nikitsenka/bank-go.git
+                    sudo docker build --no-cache -t bank-go bank-go/docker/.
+                    sudo docker run --name bank-go -p 80:8000 -e POSTGRES_HOST=52.29.19.43 -d bank-go
+    PostgresEC2Instance:
+        Description: Postgres database based on prepared AMI with DB schema.
+        Type: AWS::EC2::Instance
+        Properties:
+            InstanceType: 'd2.xlarge'
+            SecurityGroups: [!Ref 'InstanceSecurityGroup']
+            KeyName: 'temp'
+            ImageId: 'ami-0bc8991d274ef5829'
+            UserData:
+                Fn::Base64: !Sub |
+                    #!/bin/bash -xe
+                    sudo docker start 0db04fa1d6
+    BankTestEC2Instance:
+        Description: Bank Test based on prepared AMI with jmeter 5 installed.
+        Type: AWS::EC2::Instance
+        Properties:
+            InstanceType: 't2.2xlarge'
+            SecurityGroups: [!Ref 'InstanceSecurityGroup']
+            KeyName: 'temp'
+            ImageId: 'ami-0fd22bf91066b1e23'
+    InstanceSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Enable SSH access via port 22
+            SecurityGroupIngress:
+            - IpProtocol: tcp
+              FromPort: 22
+              ToPort: 22
+              CidrIp: '0.0.0.0/0'
+            - IpProtocol: tcp
+              FromPort: 80
+              ToPort: 80
+              CidrIp: '0.0.0.0/0'
+            - IpProtocol: tcp
+              FromPort: 5432
+              ToPort: 5432
+              CidrIp: '0.0.0.0/0'
+    BankIPAssoc:
+        Type: AWS::EC2::EIPAssociation
+        Properties:
+            InstanceId: !Ref 'BankEC2Instance'
+            EIP: '18.184.49.117'
+    PostgresIPAssoc:
+        Type: AWS::EC2::EIPAssociation
+        Properties:
+            InstanceId: !Ref 'PostgresEC2Instance'
+            EIP: '52.29.19.43'
+    BankTestIPAssoc:
+        Type: AWS::EC2::EIPAssociation
+        Properties:
+            InstanceId: !Ref 'BankTestEC2Instance'
+            EIP: '18.197.179.71'
+Outputs:
+    InstanceId:
+        Description: InstanceId of the newly created EC2 instance
+        Value: !Ref 'BankEC2Instance'
+    AZ:
+        Description: Availability Zone of the newly created EC2 instance
+        Value: !GetAtt [BankEC2Instance, AvailabilityZone]
+    PublicDNS:
+        Description: Public DNSName of the newly created EC2 instance
+        Value: !GetAtt [BankEC2Instance, PublicDnsName]
+    PublicIP:
+        Description: Public IP address of the newly created EC2 instance
+        Value: !GetAtt [BankEC2Instance, PublicIp]
