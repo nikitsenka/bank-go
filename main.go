@@ -81,7 +81,7 @@ func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func NewTransactionHandler(p *sql.DB) func(http.ResponseWriter, *http.Request) {
-	return func(writer htt.ResponseWriter, request *http.Request) {
+	return func(writer http.ResponseWriter, request *http.Request) {
 		decoder := json.NewDecoder(request.Body)
 		var t bank.Transaction
 		err := decoder.Decode(&t)
@@ -94,7 +94,7 @@ func NewTransactionHandler(p *sql.DB) func(http.ResponseWriter, *http.Request) {
 }
 
 func NewClientHandler(p *sql.DB) func(http.ResponseWriter, *http.Request) {
-	return func(writer htt.ResponseWriter, request *http.Request) {
+	return func(writer http.ResponseWriter, request *http.Request) {
 		params := mux.Vars(request)
 		s := params["deposit"]
 		i, _ := strconv.Atoi(s)
@@ -104,7 +104,7 @@ func NewClientHandler(p *sql.DB) func(http.ResponseWriter, *http.Request) {
 }
 
 func BalanceHandler(p *sql.DB) func(http.ResponseWriter, *http.Request) {
-	return func(writer htt.ResponseWriter, request *http.Request) {
+	return func(writer http.ResponseWriter, request *http.Request) {
 		params := mux.Vars(request)
 		s := params["id"]
 		i, _ := strconv.Atoi(s)
@@ -124,4 +124,11 @@ func migrate(p *sql.DB) {
 	_, e = p.Query("CREATE TABLE client(id SERIAL PRIMARY KEY NOT NULL, name VARCHAR(20), email VARCHAR(20), phone VARCHAR(20));")
 	_, e = p.Query("CREATE TABLE transaction(id SERIAL PRIMARY KEY NOT NULL, from_client_id INTEGER, to_client_id INTEGER, amount INTEGER);")
 	checkErr(e)
+}
+
+func checkErr(err error) {
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 }
