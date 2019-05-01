@@ -1,78 +1,74 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
     BankEC2Instance:
-        Description: Ec2 instance with running latest bank-go app.
+        Description: Ec2 instance with running latest bank-vertx app.
         Type: AWS::EC2::Instance
         Properties:
             InstanceType: 't2.micro'
             SecurityGroups: [!Ref 'InstanceSecurityGroup']
-            KeyName: 'temp'
-            ImageId: 'ami-090f10efc254eaf55'
+            KeyName: 'ivan_aws_key'
+            ImageId: 'ami-0a313d6098716f372'
             UserData:
                 Fn::Base64: !Sub |
                     #!/bin/bash -xe
-                    sudo apt-get -y update
-                    sudo apt-get install -y git
+                    apt-get -y update
+                    apt-get install -y git
                     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-                    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-                    sudo apt-get -y update
-                    sudo apt-get install -y docker-ce
-                    sudo service docker start
-                    sudo git clone https://github.com/nikitsenka/bank-go.git
-                    sudo docker build --no-cache -t bank-go bank-go/docker/.
-                    sudo docker run --name bank-go -p 80:8000 -e POSTGRES_HOST=52.29.19.43 -d bank-go
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+                    apt-get -y update
+                    apt-get install -y docker-ce
+                    service docker start
+                    git clone https://github.com/nikitsenka/bank-go.git
+                    docker build --no-cache -t bank-go -f bank-go/docker/app.dockerfile bank-go
+                    docker run --name bank-go -p 80:8080 -e POSTGRES_HOST=3.214.55.121 -d bank-go
     PostgresEC2Instance:
-        Description: Postgres database based on prepared AMI with DB schema.
+        Description: Postgres database.
         Type: AWS::EC2::Instance
         Properties:
             InstanceType: 'd2.xlarge'
             SecurityGroups: [!Ref 'InstanceSecurityGroup']
-            KeyName: 'temp'
-            ImageId: 'ami-0bc8991d274ef5829'
+            KeyName: 'ivan_aws_key'
+            ImageId: 'ami-0a313d6098716f372'
             UserData:
                 Fn::Base64: !Sub |
                     #!/bin/bash -xe
-                    sudo docker start 0db04fa1d6
-    BankTestEC2Instance:
-        Description: Bank Test based on prepared AMI with jmeter 5 installed.
-        Type: AWS::EC2::Instance
-        Properties:
-            InstanceType: 't2.2xlarge'
-            SecurityGroups: [!Ref 'InstanceSecurityGroup']
-            KeyName: 'temp'
-            ImageId: 'ami-0fd22bf91066b1e23'
+                    apt-get -y update
+                    apt-get install -y git
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+                    apt-get -y update
+                    apt-get install -y docker-ce
+                    service docker start
+                    git clone https://github.com/nikitsenka/bank-go.git
+                    docker build --no-cache -t bank-db -f bank-go/docker/db.dockerfile bank-go
+                    docker run --name bank-db -p 5432:5432 -e POSTGRES_PASSWORD=test1234 -d bank-db
     InstanceSecurityGroup:
         Type: AWS::EC2::SecurityGroup
         Properties:
             GroupDescription: Enable SSH access via port 22
             SecurityGroupIngress:
-            - IpProtocol: tcp
-              FromPort: 22
-              ToPort: 22
-              CidrIp: '0.0.0.0/0'
-            - IpProtocol: tcp
-              FromPort: 80
-              ToPort: 80
-              CidrIp: '0.0.0.0/0'
-            - IpProtocol: tcp
-              FromPort: 5432
-              ToPort: 5432
-              CidrIp: '0.0.0.0/0'
+                - IpProtocol: tcp
+                  FromPort: 22
+                  ToPort: 22
+                  CidrIp: '0.0.0.0/0'
+                - IpProtocol: tcp
+                  FromPort: 80
+                  ToPort: 80
+                  CidrIp: '0.0.0.0/0'
+                - IpProtocol: tcp
+                  FromPort: 5432
+                  ToPort: 5432
+                  CidrIp: '0.0.0.0/0'
     BankIPAssoc:
         Type: AWS::EC2::EIPAssociation
         Properties:
             InstanceId: !Ref 'BankEC2Instance'
-            EIP: '18.184.49.117'
+            EIP: '54.162.142.65'
     PostgresIPAssoc:
         Type: AWS::EC2::EIPAssociation
         Properties:
             InstanceId: !Ref 'PostgresEC2Instance'
-            EIP: '52.29.19.43'
-    BankTestIPAssoc:
-        Type: AWS::EC2::EIPAssociation
-        Properties:
-            InstanceId: !Ref 'BankTestEC2Instance'
-            EIP: '18.197.179.71'
+            EIP: '3.214.55.121'
 Outputs:
     InstanceId:
         Description: InstanceId of the newly created EC2 instance
