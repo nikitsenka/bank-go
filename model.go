@@ -1,4 +1,4 @@
-package bank
+package main
 
 type Client struct {
 	Id    int    `json:"id"`
