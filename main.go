@@ -29,10 +29,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err = pgxpool.ConnectConfig(context.Background(), poolConfig)
+	ctx := context.Background()
+	db, err = pgxpool.ConnectConfig(ctx, poolConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if err = db.Ping(ctx); err != nil {
+		db.Close()
+		log.Fatal(err)
+	}
+	log.Println("Pinged ", dsn)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", HomeHandler)

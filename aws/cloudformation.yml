@@ -1,47 +1,52 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
 Resources:
+    BankIP:
+        Type: AWS::EC2::EIP
     BankEC2Instance:
-        Description: Ec2 instance with running latest bank-vertx app.
+        Description: Ec2 instance with running latest bank-go app.
         Type: AWS::EC2::Instance
         Properties:
-            InstanceType: 't2.micro'
+            InstanceType: 'm4.large'
+            Monitoring: true
             SecurityGroups: [!Ref 'InstanceSecurityGroup']
-            KeyName: 'ivan_aws_key'
-            ImageId: 'ami-0a313d6098716f372'
+            KeyName: 'hendry'
+            ImageId: !Ref LatestAmiId
             UserData:
                 Fn::Base64: !Sub |
                     #!/bin/bash -xe
-                    apt-get -y update
-                    apt-get install -y git
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-                    apt-get -y update
-                    apt-get install -y docker-ce
-                    service docker start
-                    git clone https://github.com/nikitsenka/bank-go.git
+                    yum -y update
+                    yum -y install git vim
+                    git clone https://github.com/kaihendry/bank-go.git
                     docker build --no-cache -t bank-go -f bank-go/docker/app.dockerfile bank-go
-                    docker run --name bank-go -p 80:8080 -e POSTGRES_HOST=3.214.55.121 -d bank-go
+                    docker run --name bank-go -p 80:8080 -e PORT=8080 -e DSN=postgres://postgres:test1234@13.228.149.43:5432/postgres?sslmode=disable -d bank-go
+            Tags:
+              - Key: Name
+                Value: bank-app
     PostgresEC2Instance:
         Description: Postgres database.
         Type: AWS::EC2::Instance
         Properties:
-            InstanceType: 'd2.xlarge'
+            InstanceType: 'm4.large'
+            Monitoring: true
             SecurityGroups: [!Ref 'InstanceSecurityGroup']
-            KeyName: 'ivan_aws_key'
-            ImageId: 'ami-0a313d6098716f372'
+            KeyName: 'hendry'
+            ImageId: !Ref LatestAmiId
             UserData:
                 Fn::Base64: !Sub |
                     #!/bin/bash -xe
-                    apt-get -y update
-                    apt-get install -y git
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-                    apt-get -y update
-                    apt-get install -y docker-ce
-                    service docker start
+                    yum -y update
+                    yum -y install git vim
                     git clone https://github.com/nikitsenka/bank-go.git
                     docker build --no-cache -t bank-db -f bank-go/docker/db.dockerfile bank-go
                     docker run --name bank-db -p 5432:5432 -e POSTGRES_PASSWORD=test1234 -d bank-db
+            Tags:
+              - Key: Name
+                Value: bank-db
+
     InstanceSecurityGroup:
         Type: AWS::EC2::SecurityGroup
         Properties:
@@ -63,12 +68,12 @@ Resources:
         Type: AWS::EC2::EIPAssociation
         Properties:
             InstanceId: !Ref 'BankEC2Instance'
-            EIP: '54.162.142.65'
+            EIP: !Ref BankIP
     PostgresIPAssoc:
         Type: AWS::EC2::EIPAssociation
         Properties:
             InstanceId: !Ref 'PostgresEC2Instance'
-            EIP: '3.214.55.121'
+            EIP: '13.228.149.43'
 Outputs:
     InstanceId:
         Description: InstanceId of the newly created EC2 instance

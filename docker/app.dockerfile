@@ -18,5 +18,5 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGET_ARCH} \
 
 FROM scratch
 COPY --from=builder /app/bank-go /app/
-ENV PORT 8000
+ENV PORT 8080
 ENTRYPOINT ["/app/bank-go"]
