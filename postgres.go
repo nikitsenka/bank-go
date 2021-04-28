@@ -1,37 +1,33 @@
-package bank
+package main
 
 import (
-	"database/sql"
-	"fmt"
-
-	_ "github.com/lib/pq"
+	"context"
+	"log"
 )
 
-func CreateClient(p *sql.DB, client Client) Client {
+func CreateClient(client Client) (Client, error) {
 	var id int
-	err := p.QueryRow(
+	err := db.QueryRow(context.Background(),
 		"INSERT INTO client(name, email, phone) VALUES ($1, $2, $3) RETURNING id",
 		client.Name, client.Email, client.Phone).Scan(&id)
-	fmt.Println("Created client with id", id)
-	checkErr(err)
+	log.Println("Created client with id", id)
 	client.Id = id
-	return client
+	return client, err
 }
 
-func CreateTransaction(p *sql.DB, trans Transaction) Transaction {
+func CreateTransaction(trans Transaction) (Transaction, error) {
 	var id int
-	err := p.QueryRow(
+	err := db.QueryRow(context.Background(),
 		"INSERT INTO transaction(from_client_id, to_client_id, amount) VALUES ($1, $2, $3) RETURNING id",
 		trans.From_client_id, trans.To_client_id, trans.Amount).Scan(&id)
-	fmt.Println("Created transaction with id", id)
-	checkErr(err)
+	log.Println("Created transaction with id", id)
 	trans.Id = id
-	return trans
+	return trans, err
 }
 
-func GetBalance(p *sql.DB, client_id int) int {
+func GetBalance(client_id int) (int, error) {
 	var balance int
-	err := p.QueryRow(`
+	err := db.QueryRow(context.Background(), `
 				SELECT debit - credit
 				FROM
 				  (
@@ -45,14 +41,6 @@ func GetBalance(p *sql.DB, client_id int) int {
 					WHERE from_client_id = $1
 				  ) b;
 		`, client_id).Scan(&balance)
-	checkErr(err)
-	fmt.Println("Calculated balance with client id", client_id)
-	return balance
-}
-
-func checkErr(err error) {
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	log.Println("Calculated balance with client id", client_id)
+	return balance, err
 }
