@@ -1,23 +1,32 @@
+#Quick Start
+##Build
 
-Run tests locally
 ```
-  docker pull postgres
-  docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=test1234 -d postgres
-  go test ./bank
-```
-Build docker image
-```
-  docker build --no-cache -t bank-go .
-  
-```
-Run app in Docker
-with external postgres
-```
-  docker run --name bank-go -p 8000:8000 -e POSTGRES_HOST=${host} -d bank-go
-```
-  or create both postgres and bank-go containers and run 
-```
-  docker-compose up -d --force-recreate
+  go build -o bin/bank ./bank/ 
 ```
 
+##Run Application locally
+
+```
+  export PORT=8000
+  chmod 500 ./bin/bank
+  ./bin/bank
+```
+
+##Run DB locally
+
+```
+  docker build --no-cache -t bank-postgres ./docker/db/
+  docker run --name bank-postgres -p 5432:5432 -e POSTGRES_PASSWORD=test1234 -d bank-postgres
+```
+
+##Test
+
+```
+  curl -X POST http://localhost:8000/client/new/100 
+```
+
+```Output
+  {"id":1,"name":"","email":"","phone":""}
+```
 
