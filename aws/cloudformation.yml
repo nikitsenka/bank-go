@@ -13,16 +13,17 @@ Resources:
             InstanceType: "m4.large"
             Monitoring: true
             SecurityGroups: [!Ref "InstanceSecurityGroup"]
-            KeyName: "hendry"
+            KeyName: "bank-key"
             ImageId: !Ref LatestAmiId
             UserData:
                 Fn::Base64: !Sub |
                     #!/bin/bash -xe
                     yum -y update
                     yum -y install git vim
-                    git clone https://github.com/kaihendry/bank-go.git
-                    docker build --no-cache -t bank-go -f bank-go/docker/app.dockerfile bank-go
-                    docker run --name bank-go -p 80:8080 -e PORT=8080 -e DSN=postgres://postgres:test1234@13.228.149.43:5432/postgres?sslmode=disable -d bank-go
+                    git clone https://github.com/nikitsenka/bank-go.git
+                    cd bank-go
+                    docker build --no-cache -t bank-go .
+                    docker run --name bank-go -p 80:8080 -e PORT=8080 -e DSN=postgres://postgres:test1234@52.50.90.18:5432/postgres?sslmode=disable -d bank-go
             Tags:
                 - Key: Name
                   Value: bank-app
@@ -33,7 +34,7 @@ Resources:
             InstanceType: "m4.large"
             Monitoring: true
             SecurityGroups: [!Ref "InstanceSecurityGroup"]
-            KeyName: "hendry"
+            KeyName: "bank-key"
             ImageId: !Ref LatestAmiId
             UserData:
                 Fn::Base64: !Sub |
@@ -41,7 +42,8 @@ Resources:
                     yum -y update
                     yum -y install git vim
                     git clone https://github.com/nikitsenka/bank-go.git
-                    docker build --no-cache -t bank-db -f bank-go/docker/db.dockerfile bank-go
+                    cd bank-go/docker/db
+                    docker build --no-cache -t bank-db .
                     docker run --name bank-db -p 5432:5432 -e POSTGRES_PASSWORD=test1234 -d bank-db
             Tags:
                 - Key: Name
@@ -73,7 +75,7 @@ Resources:
         Type: AWS::EC2::EIPAssociation
         Properties:
             InstanceId: !Ref "PostgresEC2Instance"
-            EIP: "13.228.149.43"
+            EIP: "52.50.90.18"
 Outputs:
     InstanceId:
         Description: InstanceId of the newly created EC2 instance
