@@ -7,23 +7,23 @@ import (
 	_ "github.com/gorilla/mux"
 )
 
-func NewClient(balance int) (Client, error) {
+func (env *Env) NewClient(balance int) (Client, error) {
 	client := Client{0, "", "", ""}
-	client, err := CreateClient(client)
+	client, err := env.PgInterface.CreateClient(client)
 	if err != nil {
 		return client, err
 	}
 	transaction := Transaction{0, 0, client.Id, balance}
-	CreateTransaction(transaction)
+	env.PgInterface.CreateTransaction(transaction)
 	return client, err
 }
 
-func NewTransaction(from_client_id int, to_client_id int, amount int) (Transaction, error) {
+func (env *Env) NewTransaction(from_client_id int, to_client_id int, amount int) (Transaction, error) {
 	transaction := Transaction{0, from_client_id, to_client_id, amount}
-	transaction, err := CreateTransaction(transaction)
+	transaction, err := env.PgInterface.CreateTransaction(transaction)
 	return transaction, err
 }
 
-func CheckBalance(client_id int) (int, error) {
-	return GetBalance(client_id)
+func (env *Env) CheckBalance(client_id int) (int, error) {
+	return env.PgInterface.GetBalance(client_id)
 }
