@@ -1,18 +1,18 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 
+	_ "github.com/alexbrainman/odbc"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-var db *pgxpool.Pool
+var db *sql.DB
 
 const (
 	defaultDSN = "postgres://postgres:test1234@localhost:5432/postgres?sslmode=disable"
@@ -24,18 +24,12 @@ func main() {
 		dsn = defaultDSN
 	}
 	log.Println("Connecting to", dsn)
-	poolConfig, err := pgxpool.ParseConfig(dsn)
+	db, err := sql.Open("odbc", "DSN=ODBC;Driver=PostgreSQL")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ctx := context.Background()
-	db, err = pgxpool.ConnectConfig(ctx, poolConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err = db.Ping(ctx); err != nil {
+	if err = db.Ping(); err != nil {
 		db.Close()
 		log.Fatal(err)
 	}
@@ -60,7 +54,7 @@ func NewTransactionHandler(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	new_transaction, err := NewTransaction(t.From_client_id, t.To_client_id, t.Amount)
+	new_transaction, err := NewTransaction(db, t.From_client_id, t.To_client_id, t.Amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,7 +65,7 @@ func NewClientHandler(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	s := params["deposit"]
 	i, _ := strconv.Atoi(s)
-	client, err := NewClient(i)
+	client, err := NewClient(db, i)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,7 +76,7 @@ func BalanceHandler(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	s := params["id"]
 	i, _ := strconv.Atoi(s)
-	balance, err := CheckBalance(i)
+	balance, err := CheckBalance(db, i)
 	if err != nil {
 		log.Fatal(err)
 	}
