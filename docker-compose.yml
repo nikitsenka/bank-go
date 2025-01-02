@@ -4,8 +4,9 @@ services:
       dockerfile: Dockerfile
       args:
         - VERSION=1.0
-    command: sleep infinity
-    network_mode: service:bank-db
+    network_mode: host
+    ports:
+      - "80:8080"
     volumes:
       - .:/app:cached
     depends_on:
@@ -16,6 +17,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test1234
       - POSTGRES_DB=postgres
+    network_mode: host
     restart: unless-stopped
     volumes:
       - ./docker/db:/docker-entrypoint-initdb.d
