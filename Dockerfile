@@ -30,11 +30,12 @@ COPY --from=builder /usr/local/lib /usr/local/lib
 
 RUN apk add --no-cache libpq unixodbc
 RUN odbcinst -i -d -f /app/tds.drive.template
-COPY <<"EOT" /etc/odbc.ini
+ENV ODBC_HOST localhost
+COPY <<-EOT /etc/odbc.ini
 [ODBC]
 Driver = PostgreSQL
 Description = PostgreSQL Data Source
-Servername = localhost
+Servername = ${ODBC_HOST}
 Port = 5432
 Protocol = 11.2
 UserName = postgres
