@@ -7,7 +7,7 @@ RUN tar -xvf REL-17_00_0004-mimalloc.tar.gz
 WORKDIR /psqlodbc-REL-17_00_0004-mimalloc
 RUN ln -sf /usr/lib/libpq.so.5 /usr/lib/libpq.so
 RUN autoreconf -i && ./configure CC=clang CXX=clang++
-RUN make && make install && make maintainer-clean && cd / && rm -rf /psqlodbc-REL-17_00_0004-mimalloc
+RUN make && make install && make maintainer-clean
 
 WORKDIR /app
 
@@ -24,23 +24,16 @@ RUN GOOS=linux GOARCH=${TARGET_ARCH} \
 go build -o bin/bank ./bank/
 
 FROM alpine:latest
-COPY --from=builder /app/bin /app/bin
-COPY --from=builder /app/tds.drive.template /app/tds.drive.template
-COPY --from=builder /usr/local/lib /usr/local/lib
 
-RUN apk add --no-cache libpq unixodbc
+RUN apk add --no-cache \
+  libpq \
+  psqlodbc \
+  unixodbc
+
+COPY --from=builder /app/bin /app/bin
+COPY tds.drive.template /app/tds.drive.template
+
 RUN odbcinst -i -d -f /app/tds.drive.template
-ENV ODBC_HOST localhost
-COPY <<-EOT /etc/odbc.ini
-[ODBC]
-Driver = PostgreSQL
-Description = PostgreSQL Data Source
-Servername = ${ODBC_HOST}
-Port = 5432
-Protocol = 11.2
-UserName = postgres
-Password = test1234
-Database = postgres
-EOT
+
 ENV PORT 8080
 CMD ["/app/bin/bank"]
