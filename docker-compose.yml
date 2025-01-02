@@ -4,20 +4,33 @@ services:
       dockerfile: Dockerfile
       args:
         - VERSION=1.0
-    network_mode: host
+    environment:
+      - DSN=Driver=PostgreSQL;Servername=bank-db;Port=5432;UserName=postgres;Password=test1234;Database=postgres;Protocol=11.2;
+    networks:
+      - bank-net
     ports:
       - "80:8080"
-    volumes:
-      - .:/app:cached
     depends_on:
-      - bank-db
+      bank-db:
+        condition: service_healthy
+        restart: true
   bank-db:
     image: postgres:11.2-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test1234
       - POSTGRES_DB=postgres
-    network_mode: host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      - bank-net
     restart: unless-stopped
     volumes:
       - ./docker/db:/docker-entrypoint-initdb.d
+
+networks:
+  bank-net:

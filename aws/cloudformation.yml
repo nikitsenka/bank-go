@@ -41,7 +41,7 @@ Resources:
               git clone https://github.com/nikitsenka/bank-go.git
               cd bank-go
               docker build --no-cache -t bank-go .
-              docker run --name bank-go -p 80:8080 -e PORT=8080 -e DSN=postgres://postgres:test1234@${DbPrivateIP}:5432/postgres?sslmode=disable -e ODBC_HOST=${DbPrivateIP} -d bank-go
+              docker run --name bank-go -p 80:8080 -e PORT=8080 -e DSN="Driver=PostgreSQL;Servername=${DbPrivateIP};Port=5432;UserName=postgres;Password=test1234;Database=postgres;Protocol=11.2;" -d bank-go
             - DbPrivateIP: !GetAtt PostgresEC2Instance.PrivateIp
       Tags:
         - Key: Name

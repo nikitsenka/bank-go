@@ -15,7 +15,8 @@ import (
 var db *sql.DB
 
 const (
-	defaultDSN = "postgres://postgres:test1234@localhost:5432/postgres?sslmode=disable"
+	defaultDSN = "Driver=PostgreSQL;Servername=localhost;Port=5432;UserName=postgres;Password=test1234;Database=postgres;Protocol=11.2;"
+
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 		dsn = defaultDSN
 	}
 	log.Println("Connecting to", dsn)
-	db, err := sql.Open("odbc", "DSN=ODBC;Driver=PostgreSQL")
+	db, err := sql.Open("odbc", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
