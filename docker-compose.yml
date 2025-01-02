@@ -1,0 +1,21 @@
+services:
+  bank-go:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - VERSION=1.0
+    command: sleep infinity
+    network_mode: service:bank-db
+    volumes:
+      - .:/app:cached
+    depends_on:
+      - bank-db
+  bank-db:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test1234
+      - POSTGRES_DB=postgres
+    restart: unless-stopped
+    volumes:
+      - ./docker/db:/docker-entrypoint-initdb.d
