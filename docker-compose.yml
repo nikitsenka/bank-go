@@ -12,7 +12,7 @@ services:
     depends_on:
       - bank-db
   bank-db:
-    image: postgres:11.2
+    image: postgres:11.2-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test1234
