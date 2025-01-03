@@ -5,10 +5,10 @@ RUN apk add --no-cache autoconf automake clang libpq-dev libtool make unixodbc-d
 ARG CC=gcc
 ARG CXX=g++
 
-WORKDIR /
+WORKDIR /tmp
 RUN wget https://github.com/postgresql-interfaces/psqlodbc/archive/refs/tags/REL-17_00_0004-mimalloc.tar.gz
 RUN tar -xvf REL-17_00_0004-mimalloc.tar.gz
-WORKDIR /psqlodbc-REL-17_00_0004-mimalloc
+WORKDIR /tmp/psqlodbc-REL-17_00_0004-mimalloc
 RUN ln -sf /usr/lib/libpq.so.5 /usr/lib/libpq.so
 RUN autoreconf -i && ./configure CC=${CC} CXX=${CXX}
 RUN make && make install && make maintainer-clean
