@@ -16,7 +16,6 @@ var db *sql.DB
 
 const (
 	defaultDSN = "Driver=PostgreSQL;Servername=localhost;Port=5432;UserName=postgres;Password=test1234;Database=postgres;Protocol=11.2;"
-
 )
 
 func main() {
