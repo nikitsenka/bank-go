@@ -1,4 +1,0 @@
-[PostgreSQL]
-Description	= Official native client
-Driver		  =/usr/lib/psqlodbca.so
-Setup		    =/usr/lib/psqlodbcw.so
