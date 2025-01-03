@@ -1,6 +1,10 @@
-FROM golang:alpine AS builder
+FROM golang AS builder
 
-RUN apk add --no-cache autoconf automake clang libpq-dev libtool make unixodbc-dev wget
+RUN apt-get update \
+&& export DEBIAN_FRONTEND=noninteractive \
+&& apt install -y automake build-essential clang iodbc libiodbc2-dev libodbc2 libpq-dev libtool odbc-postgresql \
+&& apt clean -y \
+&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -16,23 +20,26 @@ LABEL org.label-schema.version=$VERSION
 
 RUN echo Building for ${TARGET_ARCH}
 RUN go env && go version
-RUN GOOS=linux GOARCH=${TARGET_ARCH} \
+RUN ln -s /usr/lib/x86_64-linux-gnu/libodbc.so.2.0.0 /usr/lib/x86_64-linux-gnu/libodbc.so
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGET_ARCH} \
 CC=${CC} CXX=${CXX} \
+CGO_CFLAGS="-I/usr/include/iodbc" \
 go build -o bin/bank ./bank/
 
-FROM alpine:latest
+FROM debian:stable-slim
 
-RUN apk add --no-cache \
-  libpq \
-  psqlodbc \
-  unixodbc
+RUN apt-get update \
+&& export DEBIAN_FRONTEND=noninteractive \
+&& apt install -y iodbc libodbc2 libpq5 odbc-postgresql \
+&& apt clean -y \
+&& rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/bin /app/bin
 COPY <<EOT /tmp/tds.drive.template2
 [PostgreSQL]
 Description	= Official native client
-Driver		  =/usr/lib/psqlodbca.so
-Setup		    =/usr/lib/psqlodbcw.so
+Driver		  =/usr/lib/x86_64-linux-gnu/odbc/psqlodbca.so
+Setup		    =/usr/lib/x86_64-linux-gnu/odbc/psqlodbcw.so
 EOT
 RUN odbcinst -i -d -f /tmp/tds.drive.template2
 
