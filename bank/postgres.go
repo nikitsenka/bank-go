@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"log"
 )
 
-func CreateClient(client Client) (Client, error) {
+func CreateClient(p *sql.DB, client Client) (Client, error) {
 	var id int
-	err := db.QueryRow(context.Background(),
+	err := p.QueryRow(
 		"INSERT INTO client(name, email, phone) VALUES ($1, $2, $3) RETURNING id",
 		client.Name, client.Email, client.Phone).Scan(&id)
 	log.Println("Created client with id", id)
@@ -15,9 +15,9 @@ func CreateClient(client Client) (Client, error) {
 	return client, err
 }
 
-func CreateTransaction(trans Transaction) (Transaction, error) {
+func CreateTransaction(p *sql.DB, trans Transaction) (Transaction, error) {
 	var id int
-	err := db.QueryRow(context.Background(),
+	err := p.QueryRow(
 		"INSERT INTO transaction(from_client_id, to_client_id, amount) VALUES ($1, $2, $3) RETURNING id",
 		trans.From_client_id, trans.To_client_id, trans.Amount).Scan(&id)
 	log.Println("Created transaction with id", id)
@@ -25,9 +25,9 @@ func CreateTransaction(trans Transaction) (Transaction, error) {
 	return trans, err
 }
 
-func GetBalance(client_id int) (int, error) {
+func GetBalance(p *sql.DB, client_id int) (int, error) {
 	var balance int
-	err := db.QueryRow(context.Background(), `
+	err := p.QueryRow(`
 				SELECT debit - credit
 				FROM
 				  (
