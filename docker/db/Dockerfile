@@ -1,4 +1,4 @@
-FROM postgres:11.2
+FROM postgres:17.2
 ENV POSTGRES_USER postgres
 ENV POSTGRES_PASSWORD test1234
 ENV POSTGRES_DB postgres
